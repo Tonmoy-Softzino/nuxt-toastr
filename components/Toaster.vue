@@ -1,19 +1,26 @@
 <template>
-  <ul class="notifications">
-    <li v-for="(toast, index) in toasts" :key="index" :class="toast.type">
-      <div class="column">
-        <i class="fa-solid" :class="toast.icon"></i>
-        <span>{{ toast.text }}</span>
-      </div>
-      <i class="fa-solid fa-xmark" @click="removeToast(index)"></i>
-    </li>
-  </ul>
-  <div class="buttons">
-    <button class="btn" @click="showToast('success')">Success</button>
-    <button class="btn" @click="showToast('error')">Error</button>
-    <button class="btn" @click="showToast('warning')">Warning</button>
-    <button class="btn" @click="showToast('info')">Info</button>
-    <button class="btn" @click="showToast('upload')">Upload</button>
+  <div class="container">
+    <ul class="notifications">
+      <li v-for="(toast, index) in toasts" :key="index" :class="['toast', { 'hide': toast.hide }, toast.type.class]" >
+        <div class="column">
+          <div class="icon">
+            <i class="fa-solid" :class="toast.icon">i</i>
+          </div>
+          <div class="list-text">
+            <div><b>{{ toast.type.class }}</b></div>
+            <p>{{ toast.text }}</p>
+          </div>
+        </div>
+        <span @click="removeToast(toast)">x</span>
+      </li>
+    </ul>
+    <div class="buttons">
+      <button class="btn" id="success" @click="showToast('Success')">Success</button>
+      <button class="btn" id="error" @click="showToast('Error')">Error</button>
+      <button class="btn" id="warning" @click="showToast('Warning')">Warning</button>
+      <button class="btn" id="info" @click="showToast('Info')">Info</button>
+      <button class="btn" id="upload" @click="showToast('Upload')">Upload</button>
+    </div>
   </div>
 </template>
 
@@ -23,101 +30,120 @@ import { ref } from 'vue';
 const toasts = ref([]);
 
 const toastDetails = {
-  timer: 10000,
-  success: {
+  // timer: 10000,
+  Success: {
     icon: 'arrive-dynamically-success',
-    text: 'Success: This is a success toast.',
+    text: 'This is a success toast.',
+    timer: 2000,
   },
-  error: {
+  Error: {
     icon: 'arrive-dynamically-error',
-    text: 'Error: This is an error toast.',
+    text: 'This is an error toast.',
+    timer: 5000,
   },
-  warning: {
+  Warning: {
     icon: 'arrive-dynamically-warning',
-    text: 'Warning: This is a warning toast.',
+    text: 'This is a warning toast.',
+    timer: 7000,
   },
-  info: {
+  Info: {
     icon: 'arrive-dynamically-info',
-    text: 'Info: This is an information toast.',
+    text: 'This is an information toast.',
+    timer: 5000,
   },
-  upload: {
+  Upload: {
     icon: 'arrive-dynamically-upload',
-    text: 'Upload: File uploading',
+    text: 'File uploading...',
+    timer: 10000,
   },
 };
-
+const timerAnimation = ref();
+// const temTimer = ref('');
 const showToast = (id) => {
   const { icon, text } = toastDetails[id];
-  toasts.value.push({ type: id, icon, text });
+  toasts.value.push({ type: { class: id }, icon, text });
   const toast = toasts.value[toasts.value.length - 1];
-  setTimeout(() => removeToast(toast), toastDetails.timer);
+  timerAnimation.value = `${toastDetails[id].timer/1000}s`
+  console.log(timerAnimation.value);
+  setTimeout(() => {
+    // timerAnimation.value='';
+    removeToast(toast);
+  }, toastDetails[id].timer);
 };
-
 const removeToast = (toast) => {
-  toasts.value = toasts.value.filter((t) => t !== toast);
+  toast.hide = true;
+  setTimeout(() => {
+    toasts.value = toasts.value.filter((t) => t !== toast);
+  }, 300);
+};
+const getAnimationDuration = (id) => {
+  return `${toastDetails[id].timer / 1000}s`;
 };
 </script>
 
-<style lang="scss" scoped>
-$dark: #34495E;
-$light: #ffffff;
-$success: #0ABF30;
-$error: #E24D4C;
-$warning: #E9BD0C;
-$info: #3498DB;
-$upload: #17e39b;
-$bg: rgb(229, 226, 226);
+<style scoped>
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-//:root {
-//  --dark: #34495E;
-//  --light: #ffffff;
-//  --success: #0ABF30;
-//  --error: #E24D4C;
-//  --warning: #E9BD0C;
-//  --info: #3498DB;
-//  --upload: #17e39b;
-//  --bg: rgb(229, 226, 226);
-//}
+:root {
+  --dark: #34495E;
+  --light: #ffffff;
+  --success: #0ABF30;
+  --error: #E24D4C;
+  --warning: #E9BD0C;
+  --info: #3498DB;
+  --upload: #17e39b;
+  --bg: lightgray;
+}
 body {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: $light;
-}
-li {
-  list-style-type: none;
-  height: 50px;
-  width: 300px;
-  margin-top: 15px;
-  border-radius: 6px;
-  padding: 14px 0 0 5px;
-  background: lightgrey;
+  //background: var(--light);
 }
 .notifications {
   position: fixed;
   top: 30px;
   right: 20px;
 }
+.column{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.icon{
+  margin-right: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid black;
+}
+
+.list-text{
+  display: flex;
+  flex-direction: column;
+}
+.list-text div{
+  font-size:17px;
+}
 .notifications :where(.toast, .column) {
   display: flex;
   align-items: center;
 }
 .notifications .toast {
-  width: 400px;
+  width: 300px;
+  //height: 80px;
   position: relative;
   overflow: hidden;
   list-style: none;
   border-radius: 4px;
   padding: 16px 17px;
   margin-bottom: 10px;
-  background: $bg;
-  color: $dark;
+  background: #ffffff;
+  box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1);
+  //color: var(--dark);
   justify-content: space-between;
   animation: show_toast 0.3s ease forwards;
 }
@@ -159,69 +185,75 @@ li {
   width: 100%;
   bottom: 0px;
   left: 0px;
-  animation: progress 5s linear forwards;
+  animation: progress linear forwards;
+  animation-duration: v-bind(timerAnimation);
 }
 @keyframes progress {
   100% {
     width: 0%;
   }
 }
-.toast.success::before, .btn#success {
-  background: $success;
+.toast.Success::before, .btn#success {
+  background: #0ABF30;
 }
-.toast.error::before, .btn#error {
-  background: $error;
+.toast.Error::before, .btn#error {
+  background: #E24D4C;
 }
-.toast.warning::before, .btn#warning {
-  background: $warning;
+.toast.Warning::before, .btn#warning {
+  background: #E9BD0C;
 }
-.toast.info::before, .btn#info {
-  background: $info;
+.toast.Info::before, .btn#info {
+  background: #3498DB;
 }
-.toast.upload::before, .btn#upload {
-  background: $upload;
+.toast.Upload::before, .btn#upload {
+  background: #17e39b;
 }
-.toast .column i {
+.toast .columns i {
   font-size: 1.75rem;
 }
-.toast.success .column i {
-  color: $success;
+.toast.Success .column i {
+  color: #0ABF30;
 }
-.toast.error .column i {
-  color: $error;
+.toast.Error .column i {
+  color: #E24D4C;
 }
-.toast.warning .column i {
-  color: $warning;
+.toast.Warning .column i {
+  color: #E9BD0C;
 }
-.toast.info .column i {
-  color: $info;
+.toast.Info .column i {
+  color: #3498DB;
 }
-.toast.upload .column i {
-  color: $upload;
+.toast.Upload .column i {
+  color: #17e39b;
 }
 .toast .column span {
   font-size: 1.07rem;
   margin-left: 12px;
 }
-.toast i:last-child {
-  color: #aeb0d7;
+.toast span {
   cursor: pointer;
+  background: lightgrey;
+  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.toast i:last-child:hover {
-  color: $bg;
+.toast span:hover {
+  color: red;
 }
 .buttons .btn {
   border: none;
   outline: none;
   cursor: pointer;
   margin: 0 5px;
-  color: $dark;
+  color: #34495E;
   font-size: 1.2rem;
   padding: 10px 20px;
   border-radius: 4px;
-
+  background: #E9BD0C;
 }
-
 @media screen and (max-width: 530px) {
   .notifications {
     width: 95%;
